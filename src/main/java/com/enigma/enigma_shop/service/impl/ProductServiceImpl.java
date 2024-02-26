@@ -3,6 +3,7 @@ package com.enigma.enigma_shop.service.impl;
 import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.repository.ProductRepository;
 import com.enigma.enigma_shop.service.ProductService;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,18 +30,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAll() {
+    public List<Product> getAll(String name) {
+        if (name != null) return productRepository.findAllByNameLike("%" + name + "%");
         return productRepository.findAll();
     }
 
     @Override
     public Product update(Product product) {
         getById(product.getId());
-        return productRepository.save(product);
+        return productRepository.saveAndFlush(product);
     }
 
     @Override
-    public void delete(String id) {
+    public void deleteById(String id) {
         Product currentProduct = getById(id);
         productRepository.delete(currentProduct);
     }

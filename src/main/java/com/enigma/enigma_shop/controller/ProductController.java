@@ -25,8 +25,10 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getAllProduct() {
-        return productService.getAll();
+    public List<Product> getAllProduct(
+            @RequestParam(name = "name", required = false) String name
+    ) {
+        return productService.getAll(name);
     }
 
     @PutMapping
@@ -36,7 +38,7 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     public String deleteById(@PathVariable String id) {
-        productService.delete(id);
+        productService.deleteById(id);
         return "OK";
     }
 }

@@ -1,5 +1,6 @@
 package com.enigma.enigma_shop.entity;
 
+import com.enigma.enigma_shop.constant.ConstantTable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "m_product")
+@Table(name = ConstantTable.PRODUCT)
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,6 +24,6 @@ public class Product {
     @Column(name = "price", nullable = false, columnDefinition = "BIGINT CHECK (price >= 0)")
     private Long price;
 
-    @Column(name = "stock", nullable = false, columnDefinition = "BIGINT CHECK (stock >= 0)")
+    @Column(name = "stock", nullable = false, columnDefinition = "INT CHECK (stock >= 0)")
     private Integer stock;
 }
