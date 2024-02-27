@@ -15,6 +15,7 @@ import java.util.List;
 @RequestMapping(path = APIUrl.CUSTOMER_API)
 public class CustomerController {
     private final CustomerService customerService;
+
     @PostMapping
     public Customer createNewCustomer(@RequestBody Customer product) {
         return customerService.create(product);
@@ -45,6 +46,15 @@ public class CustomerController {
     @PutMapping
     public Customer updateCustomer(@RequestBody Customer product) {
         return customerService.update(product);
+    }
+
+    @PutMapping("/{id}")
+    public String updateStatusCustomer(
+            @PathVariable(name = "id") String id,
+            @RequestParam(name = "status") Boolean status
+    ) {
+        customerService.updateStatusById(id, status);
+        return "OK";
     }
 
     @DeleteMapping("/{id}")

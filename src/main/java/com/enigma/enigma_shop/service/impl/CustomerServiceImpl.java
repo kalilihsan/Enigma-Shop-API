@@ -50,6 +50,12 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.delete(customer);
     }
 
+    @Override
+    public void updateStatusById(String id, Boolean status) {
+        findByIdOrThrowNotFound(id);
+        customerRepository.updateStatus(id, status);
+    }
+
     public Customer findByIdOrThrowNotFound(String id) {
         return customerRepository.findById(id).orElseThrow(() -> new RuntimeException("customer not found"));
     }

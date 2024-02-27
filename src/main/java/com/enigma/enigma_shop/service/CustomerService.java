@@ -11,4 +11,5 @@ public interface CustomerService {
     List<Customer> getAll(SearchCustomerRequest request);
     Customer update(Customer customer);
     void deleteById(String id);
+    void updateStatusById(String id, Boolean status);
 }
