@@ -3,11 +3,7 @@ package com.enigma.enigma_shop.entity;
 import com.enigma.enigma_shop.constant.ConstantTable;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.*;
 
 import java.util.Date;
 
@@ -15,6 +11,7 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 @Table(name = ConstantTable.CUSTOMER)
 public class Customer {
