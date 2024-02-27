@@ -2,6 +2,7 @@ package com.enigma.enigma_shop.specification;
 
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
 import com.enigma.enigma_shop.entity.Customer;
+import com.enigma.enigma_shop.util.DateUtil;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -10,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class CustomerSpecification {
     public static Specification<Customer> getSpecification(SearchCustomerRequest request) {
@@ -34,21 +36,19 @@ public class CustomerSpecification {
             }
 
             if (request.getBirthDate() != null) {
-                // formatting string to date
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                Date tempDate = new Date();
-
-                try {
-                    tempDate = sdf.parse(request.getBirthDate());
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-
+                Date tempDate = DateUtil.parseDate(request.getBirthDate(), "yyyy-MM-dd");
                 Predicate birthDatePredicate = cb.equal(root.get("birthDate"), tempDate);
                 predicates.add(birthDatePredicate);
             }
 
-            return cq.where(cb.or(predicates.toArray(new Predicate[]{}))).getRestriction();
+            if (request.getStatus() != null) {
+                Predicate statusPredicate = cb.equal(root.get("status"), request.getStatus());
+                predicates.add(statusPredicate);
+            }
+
+            return cq.where(predicates.toArray(new Predicate[]{})).getRestriction();
         };
     }
+
+
 }

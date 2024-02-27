@@ -30,7 +30,7 @@ public class CustomerController {
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "mobilePhoneNo", required = false) String phoneNumber,
             @RequestParam(name = "birthDate", required = false) @JsonFormat(pattern = "yyyy-MM-dd") String birthDate,
-            @RequestParam(name = "status", defaultValue = "true", required = false) Boolean status
+            @RequestParam(name = "status", required = false) Boolean status
     ) {
         SearchCustomerRequest request = SearchCustomerRequest.builder()
                 .name(name)
