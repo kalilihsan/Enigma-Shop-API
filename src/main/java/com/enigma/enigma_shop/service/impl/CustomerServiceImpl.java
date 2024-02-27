@@ -1,11 +1,20 @@
 package com.enigma.enigma_shop.service.impl;
 
+import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
 import com.enigma.enigma_shop.entity.Customer;
 import com.enigma.enigma_shop.repository.CustomerRepository;
 import com.enigma.enigma_shop.service.CustomerService;
+import com.enigma.enigma_shop.specification.CustomerSpecification;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,8 +33,9 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public List<Customer> getAll() {
-        return customerRepository.findAll();
+    public List<Customer> getAll(SearchCustomerRequest request) {
+        Specification<Customer> specification = CustomerSpecification.getSpecification(request);
+        return customerRepository.findAll(specification);
     }
 
     @Override

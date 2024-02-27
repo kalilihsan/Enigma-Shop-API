@@ -32,7 +32,7 @@ public class Customer {
 
     @Column(name = "birth_date")
     @Temporal(TemporalType.DATE)
-    @JsonFormat(pattern = "yyyy-mm-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date birthDate;
 
     @Column(name = "status")
