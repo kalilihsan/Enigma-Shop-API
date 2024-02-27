@@ -1,6 +1,8 @@
 package com.enigma.enigma_shop.service.impl;
 
 import com.enigma.enigma_shop.dto.request.TransactionRequest;
+import com.enigma.enigma_shop.dto.response.TransactionDetailResponse;
+import com.enigma.enigma_shop.dto.response.TransactionResponse;
 import com.enigma.enigma_shop.entity.Customer;
 import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.entity.Transaction;
@@ -11,6 +13,7 @@ import com.enigma.enigma_shop.service.ProductService;
 import com.enigma.enigma_shop.service.TransactionDetailService;
 import com.enigma.enigma_shop.service.TransactionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +22,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionDetailService transactionDetailService;
@@ -27,7 +31,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Transaction create(TransactionRequest request) {
+    public TransactionResponse create(TransactionRequest request) {
         // cari/validasi customer
         Customer customer = customerService.getById(request.getCustomerId());
 
@@ -39,24 +43,69 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.saveAndFlush(trx);
 
         // 2. Save Transaction Detail Table
-        List<TransactionDetail> trxDetails = request.getTransactionDetails().stream()
-                .map(detailRequest -> {
-                    Product product = productService.getById(detailRequest.getProductId());
+        List<TransactionDetail> trxDetails = request.getTransactionDetails().stream().map(detailRequest -> {
+            /*
+             * Log:
+             * 1. info
+             * 2. debug
+             * 3. warning
+             * 4. error
+             * */
+            log.info("Quantity dari detail request: {}", detailRequest.getQty());
+            Product product = productService.getById(detailRequest.getProductId());
 
-                    if (product.getStock() - detailRequest.getQty() < 0) throw new RuntimeException("Sold out");
+            if (product.getStock() - detailRequest.getQty() < 0) throw new RuntimeException("Sold out");
 
-                    product.setStock(product.getStock() - detailRequest.getQty());
+            product.setStock(product.getStock() - detailRequest.getQty());
 
-                    return TransactionDetail.builder()
-                            .product(product)
-                            .transaction(trx)
-                            .qty(detailRequest.getQty())
-                            .productPrice(product.getPrice())
-                            .build();
-                }).toList();
+            return TransactionDetail.builder()
+                    .product(product)
+                    .transaction(trx)
+                    .qty(detailRequest.getQty())
+                    .productPrice(product.getPrice())
+                    .build();
+        }).toList();
 
-        trx.setTransactionDetails(trxDetails);
         transactionDetailService.createBulk(trxDetails);
-        return trx;
+        trx.setTransactionDetails(trxDetails);
+
+        List<TransactionDetailResponse> trxDetailResponses = trxDetails.stream().map(detail -> {
+            return TransactionDetailResponse.builder()
+                    .id(detail.getId())
+                    .productId(detail.getProduct().getId())
+                    .productPrice(detail.getProductPrice())
+                    .quantity(detail.getQty())
+                    .build();
+        }).toList();
+
+        return TransactionResponse.builder()
+                .id(trx.getId())
+                .customerId(trx.getCustomer().getId())
+                .transDate(trx.getTransDate())
+                .transactionDetails(trxDetailResponses)
+                .build();
+    }
+
+    @Override
+    public List<TransactionResponse> getAll() {
+        List<Transaction> transactions = transactionRepository.findAll();
+
+        return transactions.stream().map(trx -> {
+            List<TransactionDetailResponse> trxDetailResponses = trx.getTransactionDetails().stream().map(detail -> {
+                return TransactionDetailResponse.builder()
+                        .id(detail.getId())
+                        .productId(detail.getProduct().getId())
+                        .productPrice(detail.getProductPrice())
+                        .quantity(detail.getQty())
+                        .build();
+            }).toList();
+
+            return TransactionResponse.builder()
+                    .id(trx.getId())
+                    .customerId(trx.getCustomer().getId())
+                    .transDate(trx.getTransDate())
+                    .transactionDetails(trxDetailResponses)
+                    .build();
+        }).toList();
     }
 }

@@ -2,13 +2,13 @@ package com.enigma.enigma_shop.controller;
 
 import com.enigma.enigma_shop.constant.APIUrl;
 import com.enigma.enigma_shop.dto.request.TransactionRequest;
+import com.enigma.enigma_shop.dto.response.TransactionResponse;
 import com.enigma.enigma_shop.entity.Transaction;
 import com.enigma.enigma_shop.service.TransactionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,8 +17,13 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping
-    public Transaction createNewTransaction(@RequestBody TransactionRequest request) {
+    public TransactionResponse createNewTransaction(@RequestBody TransactionRequest request) {
         return transactionService.create(request);
+    }
+
+    @GetMapping
+    public List<TransactionResponse> getAllTransaction() {
+        return transactionService.getAll();
     }
 
 }
