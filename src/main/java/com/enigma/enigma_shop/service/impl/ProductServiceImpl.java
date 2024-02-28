@@ -1,10 +1,14 @@
 package com.enigma.enigma_shop.service.impl;
 
+import com.enigma.enigma_shop.dto.request.SearchProductRequest;
 import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.repository.ProductRepository;
 import com.enigma.enigma_shop.service.ProductService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,9 +34,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAll(String name) {
-        if (name != null) return productRepository.findAllByNameLike("%" + name + "%");
-        return productRepository.findAll();
+    public Page<Product> getAll(SearchProductRequest request) {
+        if (request.getPage() <= 0) request.setPage(1);
+        Pageable pageable = PageRequest.of((request.getPage() - 1), request.getSize());
+        return productRepository.findAll(pageable);
     }
 
     @Override

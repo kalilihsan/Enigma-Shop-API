@@ -1,12 +1,12 @@
 package com.enigma.enigma_shop.controller;
 
 import com.enigma.enigma_shop.constant.APIUrl;
+import com.enigma.enigma_shop.dto.request.SearchProductRequest;
 import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,10 +25,15 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getAllProduct(
-            @RequestParam(name = "name", required = false) String name
+    public Page<Product> getAllProduct(
+            @RequestParam(name = "page", defaultValue = "1") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size
     ) {
-        return productService.getAll(name);
+        SearchProductRequest request = SearchProductRequest.builder()
+                .page(page)
+                .size(size)
+                .build();
+        return productService.getAll(request);
     }
 
     @PutMapping

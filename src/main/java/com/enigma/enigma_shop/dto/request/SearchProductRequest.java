@@ -7,11 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SearchCustomerRequest {
-    private String name;
-    private String mobilePhoneNumber;
-    private String birthDate;
-    private Boolean status;
+public class SearchProductRequest {
     private Integer page;
     private Integer size;
 }
