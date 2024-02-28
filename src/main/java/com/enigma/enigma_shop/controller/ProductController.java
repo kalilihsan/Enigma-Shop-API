@@ -27,11 +27,17 @@ public class ProductController {
     @GetMapping
     public Page<Product> getAllProduct(
             @RequestParam(name = "page", defaultValue = "1") Integer page,
-            @RequestParam(name = "size", defaultValue = "10") Integer size
+            @RequestParam(name = "size", defaultValue = "10") Integer size,
+            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction,
+            @RequestParam(name = "name" ,required = false) String name
     ) {
         SearchProductRequest request = SearchProductRequest.builder()
                 .page(page)
                 .size(size)
+                .sortBy(sortBy)
+                .direction(direction)
+                .name(name)
                 .build();
         return productService.getAll(request);
     }
