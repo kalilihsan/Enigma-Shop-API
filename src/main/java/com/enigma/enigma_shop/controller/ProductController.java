@@ -6,6 +6,8 @@ import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,17 +17,19 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public Product createNewProduct(@RequestBody Product product) {
-        return productService.create(product);
+    public ResponseEntity<Product> createNewProduct(@RequestBody Product product) {
+        Product newProduct = productService.create(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newProduct);
     }
 
     @GetMapping(path = "/{id}")
-    public Product getProductById(@PathVariable String id) {
-        return productService.getById(id);
+    public ResponseEntity<Product> getProductById(@PathVariable String id) {
+        Product product = productService.getById(id);
+        return ResponseEntity.ok(product);
     }
 
     @GetMapping
-    public Page<Product> getAllProduct(
+    public ResponseEntity<Page<Product>> getAllProduct(
             @RequestParam(name = "page", defaultValue = "1") Integer page,
             @RequestParam(name = "size", defaultValue = "10") Integer size,
             @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
@@ -39,17 +43,19 @@ public class ProductController {
                 .direction(direction)
                 .name(name)
                 .build();
-        return productService.getAll(request);
+        Page<Product> products = productService.getAll(request);
+        return ResponseEntity.ok(products);
     }
 
     @PutMapping
-    public Product updateProduct(@RequestBody Product product) {
-        return productService.update(product);
+    public ResponseEntity<Product> updateProduct(@RequestBody Product product) {
+        Product updatedProduct = productService.update(product);
+        return ResponseEntity.ok(updatedProduct);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteById(@PathVariable String id) {
+    public ResponseEntity<String> deleteById(@PathVariable String id) {
         productService.deleteById(id);
-        return "OK";
+        return ResponseEntity.ok("OK");
     }
 }
