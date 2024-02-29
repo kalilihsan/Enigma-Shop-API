@@ -1,10 +1,12 @@
 package com.enigma.enigma_shop.service.impl;
 
+import com.enigma.enigma_shop.dto.request.NewProductRequest;
 import com.enigma.enigma_shop.dto.request.SearchProductRequest;
 import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.repository.ProductRepository;
 import com.enigma.enigma_shop.service.ProductService;
 import com.enigma.enigma_shop.specification.ProductSpecification;
+import com.enigma.enigma_shop.util.ValidationUtil;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -12,27 +14,35 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
 
-
-// lombok RequiredArgumentConstructor -> constructor injection
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+    private final ValidationUtil validationUtil;
 
     @Override
-    public Product create(Product product) {
+    public Product create(NewProductRequest request) {
+        validationUtil.validate(request);
+        Product product = Product.builder()
+                .name(request.getName())
+                .price(request.getPrice())
+                .stock(request.getStock())
+                .build();
         return productRepository.saveAndFlush(product);
     }
 
     @Override
     public Product getById(String id) {
         Optional<Product> optionalProduct = productRepository.findById(id);
-        if (optionalProduct.isEmpty()) throw new RuntimeException("product not found");
+        if (optionalProduct.isEmpty())
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "product not found");
         return optionalProduct.get();
     }
 
