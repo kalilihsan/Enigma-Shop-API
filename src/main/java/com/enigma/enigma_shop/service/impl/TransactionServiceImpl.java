@@ -1,5 +1,7 @@
 package com.enigma.enigma_shop.service.impl;
 
+import com.enigma.enigma_shop.constant.ResponseMessage;
+import com.enigma.enigma_shop.dto.request.SearchTransactionRequest;
 import com.enigma.enigma_shop.dto.request.TransactionRequest;
 import com.enigma.enigma_shop.dto.response.TransactionDetailResponse;
 import com.enigma.enigma_shop.dto.response.TransactionResponse;
@@ -13,16 +15,19 @@ import com.enigma.enigma_shop.service.ProductService;
 import com.enigma.enigma_shop.service.TransactionDetailService;
 import com.enigma.enigma_shop.service.TransactionService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionDetailService transactionDetailService;
@@ -41,12 +46,12 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.saveAndFlush(trx);
 
         List<TransactionDetail> trxDetails = request.getTransactionDetails().stream().map(detailRequest -> {
-            log.info("Quantity dari detail request: {}", detailRequest.getQty());
             Product product = productService.getById(detailRequest.getProductId());
 
-            if (product.getStock() - detailRequest.getQty() < 0) throw new RuntimeException("Sold out");
+            if (product.getStock() - detailRequest.getQty() < 0) throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, ResponseMessage.ERROR_OUT_OF_STOCK);
 
             product.setStock(product.getStock() - detailRequest.getQty());
+            productService.update(product);
 
             return TransactionDetail.builder()
                     .product(product)
@@ -77,18 +82,17 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<TransactionResponse> getAll() {
-        List<Transaction> transactions = transactionRepository.findAll();
+    public Page<TransactionResponse> getAll(SearchTransactionRequest request) {
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        Page<Transaction> transactions = transactionRepository.findAll(pageable);
 
-        return transactions.stream().map(trx -> {
-            List<TransactionDetailResponse> trxDetailResponses = trx.getTransactionDetails().stream().map(detail -> {
-                return TransactionDetailResponse.builder()
-                        .id(detail.getId())
-                        .productId(detail.getProduct().getId())
-                        .productPrice(detail.getProductPrice())
-                        .quantity(detail.getQty())
-                        .build();
-            }).toList();
+        return transactions.map(trx -> {
+            List<TransactionDetailResponse> trxDetailResponses = trx.getTransactionDetails().stream().map(detail -> TransactionDetailResponse.builder()
+                    .id(detail.getId())
+                    .productId(detail.getProduct().getId())
+                    .productPrice(detail.getProductPrice())
+                    .quantity(detail.getQty())
+                    .build()).toList();
 
             return TransactionResponse.builder()
                     .id(trx.getId())
@@ -96,6 +100,6 @@ public class TransactionServiceImpl implements TransactionService {
                     .transDate(trx.getTransDate())
                     .transactionDetails(trxDetailResponses)
                     .build();
-        }).toList();
+        });
     }
 }

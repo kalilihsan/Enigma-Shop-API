@@ -97,7 +97,33 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public RegisterResponse registerAdmin(AuthRequest request) {
-        return null;
+        Role roleAdmin = roleService.getOrSave(UserRole.ROLE_ADMIN);
+        Role roleCustomer = roleService.getOrSave(UserRole.ROLE_CUSTOMER);
+
+        String hashPassword = passwordEncoder.encode(request.getPassword());
+
+        UserAccount account = UserAccount.builder()
+                .username(request.getUsername())
+                .password(hashPassword)
+                .role(List.of(roleAdmin, roleCustomer))
+                .isEnable(true)
+                .build();
+
+        userAccountRepository.saveAndFlush(account);
+
+        Customer customer = Customer.builder()
+                .status(true)
+                .userAccount(account)
+                .build();
+        customerService.create(customer);
+
+        List<String> roles = account.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority).toList();
+
+        return RegisterResponse.builder()
+                .username(account.getUsername())
+                .roles(roles)
+                .build();
     }
 
     @Transactional(readOnly = true)

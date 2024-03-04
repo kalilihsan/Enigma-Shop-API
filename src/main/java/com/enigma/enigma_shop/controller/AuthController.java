@@ -1,11 +1,11 @@
 package com.enigma.enigma_shop.controller;
 
 import com.enigma.enigma_shop.constant.APIUrl;
+import com.enigma.enigma_shop.constant.ResponseMessage;
 import com.enigma.enigma_shop.dto.request.AuthRequest;
 import com.enigma.enigma_shop.dto.response.CommonResponse;
 import com.enigma.enigma_shop.dto.response.LoginResponse;
 import com.enigma.enigma_shop.dto.response.RegisterResponse;
-import com.enigma.enigma_shop.entity.UserAccount;
 import com.enigma.enigma_shop.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,13 +30,27 @@ public class AuthController {
         RegisterResponse register = authService.register(request);
         CommonResponse<RegisterResponse> response = CommonResponse.<RegisterResponse>builder()
                 .statusCode(HttpStatus.CREATED.value())
-                .message("successfully create new account")
+                .message(ResponseMessage.SUCCESS_SAVE_DATA)
                 .data(register)
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping(path = "login",
+    @PostMapping(path = "/register/admin",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<CommonResponse<?>> registerAdmin(@RequestBody AuthRequest request) {
+        RegisterResponse register = authService.register(request);
+        CommonResponse<RegisterResponse> response = CommonResponse.<RegisterResponse>builder()
+                .statusCode(HttpStatus.CREATED.value())
+                .message(ResponseMessage.SUCCESS_SAVE_DATA)
+                .data(register)
+                .build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping(path = "/login",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -44,9 +58,10 @@ public class AuthController {
         LoginResponse loginResponse = authService.login(request);
         CommonResponse<LoginResponse> response = CommonResponse.<LoginResponse>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("login successfully")
+                .message(ResponseMessage.SUCCESS_LOGIN)
                 .data(loginResponse)
                 .build();
         return ResponseEntity.ok(response);
     }
+
 }

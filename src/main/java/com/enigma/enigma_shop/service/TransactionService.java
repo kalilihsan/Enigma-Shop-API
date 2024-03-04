@@ -1,12 +1,14 @@
 package com.enigma.enigma_shop.service;
 
+import com.enigma.enigma_shop.dto.request.SearchTransactionRequest;
 import com.enigma.enigma_shop.dto.request.TransactionRequest;
 import com.enigma.enigma_shop.dto.response.TransactionResponse;
 import com.enigma.enigma_shop.entity.Transaction;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface TransactionService {
     TransactionResponse create(TransactionRequest request);
-    List<TransactionResponse> getAll();
+    Page<TransactionResponse> getAll(SearchTransactionRequest request);
 }

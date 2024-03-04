@@ -8,7 +8,7 @@ import com.enigma.enigma_shop.entity.Customer;
 import java.util.List;
 
 public interface CustomerService {
-    CustomerResponse create(Customer customer);
+    Customer create(Customer customer);
     CustomerResponse getOneById(String id);
     Customer getById(String id);
     List<CustomerResponse> getAll(SearchCustomerRequest request);

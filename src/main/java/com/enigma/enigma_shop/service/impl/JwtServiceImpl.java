@@ -6,6 +6,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.enigma.enigma_shop.constant.ResponseMessage;
 import com.enigma.enigma_shop.dto.response.JwtClaims;
 import com.enigma.enigma_shop.entity.UserAccount;
 import com.enigma.enigma_shop.service.JwtService;
@@ -13,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,13 +24,15 @@ import java.time.Instant;
 public class JwtServiceImpl implements JwtService {
     private final String JWT_SECRET;
     private final String ISSUER;
+    private final long JWT_EXPIRATION;
 
     public JwtServiceImpl(@Value("${enigma_shop.jwt.secret_key}") String jwtSecret,
-                          @Value("${enigma_shop.jwt.issuer}") String issuer) {
+                          @Value("${enigma_shop.jwt.issuer}") String issuer,
+                          @Value("${enigma_shop.jwt.expirationInSecond}") long expiration) {
         JWT_SECRET = jwtSecret;
         ISSUER = issuer;
+        JWT_EXPIRATION = expiration;
     }
-
 
     @Override
     public String generateToken(UserAccount account) {
@@ -40,11 +42,11 @@ public class JwtServiceImpl implements JwtService {
                     .withSubject(account.getId())
                     .withClaim("roles", account.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
                     .withIssuedAt(Instant.now())
-                    .withExpiresAt(Instant.now().plusSeconds(60 * 15))
+                    .withExpiresAt(Instant.now().plusSeconds(JWT_EXPIRATION))
                     .withIssuer(ISSUER)
                     .sign(algorithm);
         } catch (JWTCreationException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error while creating jwt token");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ResponseMessage.ERROR_CREATING_JWT);
         }
     }
 

@@ -1,6 +1,6 @@
 package com.enigma.enigma_shop.service.impl;
 
-import com.enigma.enigma_shop.constant.UserRole;
+import com.enigma.enigma_shop.constant.ResponseMessage;
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
 import com.enigma.enigma_shop.dto.request.UpdateCustomerRequest;
 import com.enigma.enigma_shop.dto.response.CustomerResponse;
@@ -13,13 +13,11 @@ import com.enigma.enigma_shop.specification.CustomerSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Date;
-import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -30,9 +28,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public CustomerResponse create(Customer customer) {
-        Customer newCustomer = customerRepository.saveAndFlush(customer);
-        return convertCustomerToCustomerResponse(newCustomer);
+    public Customer create(Customer customer) {
+        return customerRepository.saveAndFlush(customer);
     }
 
     @Transactional(readOnly = true)
@@ -61,7 +58,7 @@ public class CustomerServiceImpl implements CustomerService {
         UserAccount userAccount = userService.getByContext();
 
         if (!userAccount.getId().equals(currentCustomer.getUserAccount().getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "cannot access this resource");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ResponseMessage.ERROR_FORBIDDEN);
         }
 
         currentCustomer.setName(request.getName());
@@ -87,7 +84,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private Customer findByIdOrThrowNotFound(String id) {
-        return customerRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "customer not found"));
+        return customerRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ResponseMessage.ERROR_NOT_FOUND));
     }
 
     private CustomerResponse convertCustomerToCustomerResponse(Customer customer) {
