@@ -14,6 +14,7 @@ import com.enigma.enigma_shop.service.JwtService;
 import com.enigma.enigma_shop.service.RoleService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,10 +37,15 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+    @Value("${enigma_shop.username.superadmin}")
+    private String superAdminUsername;
+    @Value("${enigma_shop.password.superadmin}")
+    private String superAdminPassword;
+
     @Transactional(rollbackFor = Exception.class)
     @PostConstruct // berguna untuk mengeksekusi method yg akan dijalankan pada saat aplikasi pertama kali dijalankan
     public void initSuperAdmin() {
-        Optional<UserAccount> currentUser = userAccountRepository.findByUsername("superadmin");
+        Optional<UserAccount> currentUser = userAccountRepository.findByUsername(superAdminUsername);
         if (currentUser.isPresent()) return;
 
         Role superAdmin = roleService.getOrSave(UserRole.ROLE_SUPER_ADMIN);
@@ -47,8 +53,8 @@ public class AuthServiceImpl implements AuthService {
         Role customer = roleService.getOrSave(UserRole.ROLE_CUSTOMER);
 
         UserAccount account = UserAccount.builder()
-                .username("superadmin")
-                .password(passwordEncoder.encode("password"))
+                .username(superAdminUsername)
+                .password(passwordEncoder.encode(superAdminPassword))
                 .role(List.of(superAdmin, admin, customer))
                 .isEnable(true)
                 .build();

@@ -2,6 +2,7 @@ package com.enigma.enigma_shop.controller;
 
 import com.enigma.enigma_shop.constant.APIUrl;
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
+import com.enigma.enigma_shop.dto.request.UpdateCustomerRequest;
 import com.enigma.enigma_shop.dto.response.CustomerResponse;
 import com.enigma.enigma_shop.entity.Customer;
 import com.enigma.enigma_shop.service.CustomerService;
@@ -43,7 +44,7 @@ public class CustomerController {
     }
 
     @PutMapping
-    public ResponseEntity<CustomerResponse> updateCustomer(@RequestBody Customer payload) {
+    public ResponseEntity<CustomerResponse> updateCustomer(@RequestBody UpdateCustomerRequest payload) {
         CustomerResponse customer = customerService.update(payload);
         return ResponseEntity.ok(customer);
     }
