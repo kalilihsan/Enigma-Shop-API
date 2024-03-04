@@ -1,26 +1,32 @@
 package com.enigma.enigma_shop.service.impl;
 
+import com.enigma.enigma_shop.constant.UserRole;
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
 import com.enigma.enigma_shop.dto.request.UpdateCustomerRequest;
 import com.enigma.enigma_shop.dto.response.CustomerResponse;
 import com.enigma.enigma_shop.entity.Customer;
+import com.enigma.enigma_shop.entity.UserAccount;
 import com.enigma.enigma_shop.repository.CustomerRepository;
 import com.enigma.enigma_shop.service.CustomerService;
+import com.enigma.enigma_shop.service.UserService;
 import com.enigma.enigma_shop.specification.CustomerSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Date;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
+    private final UserService userService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -52,6 +58,12 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse update(UpdateCustomerRequest request) {
         Customer currentCustomer = findByIdOrThrowNotFound(request.getId());
+        UserAccount userAccount = userService.getByContext();
+
+        if (!userAccount.getId().equals(currentCustomer.getUserAccount().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "cannot access this resource");
+        }
+
         currentCustomer.setName(request.getName());
         currentCustomer.setMobilePhoneNo(request.getMobilePhoneNo());
         currentCustomer.setAddress(request.getAddress());

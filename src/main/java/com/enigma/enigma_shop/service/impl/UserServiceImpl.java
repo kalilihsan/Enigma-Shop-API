@@ -5,6 +5,8 @@ import com.enigma.enigma_shop.repository.UserAccountRepository;
 import com.enigma.enigma_shop.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserAccount getByUserId(String id) {
         return userAccountRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+    }
+
+    @Override
+    public UserAccount getByContext() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return userAccountRepository.findByUsername(authentication.getPrincipal().toString())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
     }
 }

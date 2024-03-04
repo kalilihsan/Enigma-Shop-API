@@ -9,6 +9,7 @@ import com.enigma.enigma_shop.service.CustomerService;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,9 @@ public class CustomerController {
         return ResponseEntity.ok(customer);
     }
 
+    // hasAnyRole() -> multi role
+    // hasRole() -> single role
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @GetMapping
     public ResponseEntity<List<CustomerResponse>> getAllCustomer(
             @RequestParam(name = "name", required = false) String name,
