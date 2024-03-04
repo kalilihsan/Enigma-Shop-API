@@ -1,6 +1,7 @@
 package com.enigma.enigma_shop.service.impl;
 
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
+import com.enigma.enigma_shop.dto.response.CustomerResponse;
 import com.enigma.enigma_shop.entity.Customer;
 import com.enigma.enigma_shop.repository.CustomerRepository;
 import com.enigma.enigma_shop.service.CustomerService;
@@ -21,8 +22,14 @@ public class CustomerServiceImpl implements CustomerService {
     private final ValidationUtil validationUtil;
 
     @Override
-    public Customer create(Customer customer) {
-        return customerRepository.saveAndFlush(customer);
+    public CustomerResponse create(Customer customer) {
+        Customer newCustomer = customerRepository.saveAndFlush(customer);
+        return convertCustomerToCustomerResponse(newCustomer);
+    }
+
+    @Override
+    public CustomerResponse getOneById(String id) {
+        return convertCustomerToCustomerResponse(findByIdOrThrowNotFound(id));
     }
 
     @Override
@@ -31,15 +38,16 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public List<Customer> getAll(SearchCustomerRequest request) {
+    public List<CustomerResponse> getAll(SearchCustomerRequest request) {
         Specification<Customer> specification = CustomerSpecification.getSpecification(request);
-        return customerRepository.findAll(specification);
+        return customerRepository.findAll(specification).stream().map(customer -> convertCustomerToCustomerResponse(customer)).toList();
     }
 
     @Override
-    public Customer update(Customer customer) {
+    public CustomerResponse update(Customer customer) {
         findByIdOrThrowNotFound(customer.getId());
-        return customerRepository.saveAndFlush(customer);
+        Customer updatedCustomer = customerRepository.saveAndFlush(customer);
+        return convertCustomerToCustomerResponse(updatedCustomer);
     }
 
     @Override
@@ -56,5 +64,15 @@ public class CustomerServiceImpl implements CustomerService {
 
     public Customer findByIdOrThrowNotFound(String id) {
         return customerRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "customer not found"));
+    }
+
+    private CustomerResponse convertCustomerToCustomerResponse(Customer newCustomer) {
+        return CustomerResponse.builder()
+                .id(newCustomer.getId())
+                .name(newCustomer.getName())
+                .mobilePhoneNo(newCustomer.getMobilePhoneNo())
+                .address(newCustomer.getAddress())
+                .userAccountId(newCustomer.getUserAccount().getId())
+                .build();
     }
 }

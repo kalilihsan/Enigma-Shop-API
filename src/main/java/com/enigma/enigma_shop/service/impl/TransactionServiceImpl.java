@@ -32,25 +32,15 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public TransactionResponse create(TransactionRequest request) {
-        // cari/validasi customer
         Customer customer = customerService.getById(request.getCustomerId());
 
-        // 1. Save Transaction Table
         Transaction trx = Transaction.builder()
                 .customer(customer)
                 .transDate(new Date())
                 .build();
         transactionRepository.saveAndFlush(trx);
 
-        // 2. Save Transaction Detail Table
         List<TransactionDetail> trxDetails = request.getTransactionDetails().stream().map(detailRequest -> {
-            /*
-             * Log:
-             * 1. info
-             * 2. debug
-             * 3. warning
-             * 4. error
-             * */
             log.info("Quantity dari detail request: {}", detailRequest.getQty());
             Product product = productService.getById(detailRequest.getProductId());
 
@@ -69,14 +59,13 @@ public class TransactionServiceImpl implements TransactionService {
         transactionDetailService.createBulk(trxDetails);
         trx.setTransactionDetails(trxDetails);
 
-        List<TransactionDetailResponse> trxDetailResponses = trxDetails.stream().map(detail -> {
-            return TransactionDetailResponse.builder()
-                    .id(detail.getId())
-                    .productId(detail.getProduct().getId())
-                    .productPrice(detail.getProductPrice())
-                    .quantity(detail.getQty())
-                    .build();
-        }).toList();
+        List<TransactionDetailResponse> trxDetailResponses = trxDetails.stream().map(detail ->
+                TransactionDetailResponse.builder()
+                .id(detail.getId())
+                .productId(detail.getProduct().getId())
+                .productPrice(detail.getProductPrice())
+                .quantity(detail.getQty())
+                .build()).toList();
 
         return TransactionResponse.builder()
                 .id(trx.getId())
@@ -86,6 +75,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<TransactionResponse> getAll() {
         List<Transaction> transactions = transactionRepository.findAll();

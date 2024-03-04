@@ -12,6 +12,7 @@ import com.enigma.enigma_shop.service.AuthService;
 import com.enigma.enigma_shop.service.CustomerService;
 import com.enigma.enigma_shop.service.JwtService;
 import com.enigma.enigma_shop.service.RoleService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +35,26 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
+    @Transactional(rollbackFor = Exception.class)
+    @PostConstruct // berguna untuk mengeksekusi method yg akan dijalankan pada saat aplikasi pertama kali dijalankan
+    public void initSuperAdmin() {
+        Optional<UserAccount> currentUser = userAccountRepository.findByUsername("superadmin");
+        if (currentUser.isPresent()) return;
+
+        Role superAdmin = roleService.getOrSave(UserRole.ROLE_SUPER_ADMIN);
+        Role admin = roleService.getOrSave(UserRole.ROLE_ADMIN);
+        Role customer = roleService.getOrSave(UserRole.ROLE_CUSTOMER);
+
+        UserAccount account = UserAccount.builder()
+                .username("superadmin")
+                .password(passwordEncoder.encode("password"))
+                .role(List.of(superAdmin, admin, customer))
+                .isEnable(true)
+                .build();
+
+        userAccountRepository.save(account);
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -46,6 +68,7 @@ public class AuthServiceImpl implements AuthService {
                 .role(List.of(role))
                 .isEnable(true)
                 .build();
+
         userAccountRepository.saveAndFlush(account);
 
         Customer customer = Customer.builder()
@@ -64,6 +87,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public RegisterResponse registerAdmin(AuthRequest request) {
         return null;

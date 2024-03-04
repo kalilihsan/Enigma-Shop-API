@@ -7,7 +7,6 @@ import com.enigma.enigma_shop.repository.ProductRepository;
 import com.enigma.enigma_shop.service.ProductService;
 import com.enigma.enigma_shop.specification.ProductSpecification;
 import com.enigma.enigma_shop.util.ValidationUtil;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,9 +15,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,6 +26,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ValidationUtil validationUtil;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Product create(NewProductRequest request) {
         validationUtil.validate(request);
@@ -38,6 +38,7 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.saveAndFlush(product);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Product getById(String id) {
         Optional<Product> optionalProduct = productRepository.findById(id);
@@ -46,6 +47,7 @@ public class ProductServiceImpl implements ProductService {
         return optionalProduct.get();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<Product> getAll(SearchProductRequest request) {
         if (request.getPage() <= 0) request.setPage(1);
@@ -56,12 +58,14 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findAll(specification, pageable);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Product update(Product product) {
         getById(product.getId());
         return productRepository.saveAndFlush(product);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteById(String id) {
         Product currentProduct = getById(id);
