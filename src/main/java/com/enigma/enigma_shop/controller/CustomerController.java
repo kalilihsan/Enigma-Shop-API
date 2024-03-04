@@ -2,6 +2,7 @@ package com.enigma.enigma_shop.controller;
 
 import com.enigma.enigma_shop.constant.APIUrl;
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
+import com.enigma.enigma_shop.dto.response.CustomerResponse;
 import com.enigma.enigma_shop.entity.Customer;
 import com.enigma.enigma_shop.service.CustomerService;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -18,13 +19,13 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable String id) {
-        Customer customer = customerService.getById(id);
+    public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable String id) {
+        CustomerResponse customer = customerService.getOneById(id);
         return ResponseEntity.ok(customer);
     }
 
     @GetMapping
-    public ResponseEntity<List<Customer>> getAllCustomer(
+    public ResponseEntity<List<CustomerResponse>> getAllCustomer(
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "mobilePhoneNo", required = false) String phoneNumber,
             @RequestParam(name = "birthDate", required = false) @JsonFormat(pattern = "yyyy-MM-dd") String birthDate,
@@ -37,13 +38,13 @@ public class CustomerController {
                 .status(status)
                 .build();
 
-        List<Customer> customers = customerService.getAll(request);
+        List<CustomerResponse> customers = customerService.getAll(request);
         return ResponseEntity.ok(customers);
     }
 
     @PutMapping
-    public ResponseEntity<Customer> updateCustomer(@RequestBody Customer payload) {
-        Customer customer = customerService.update(payload);
+    public ResponseEntity<CustomerResponse> updateCustomer(@RequestBody Customer payload) {
+        CustomerResponse customer = customerService.update(payload);
         return ResponseEntity.ok(customer);
     }
 
