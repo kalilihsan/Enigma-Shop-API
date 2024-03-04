@@ -1,13 +1,11 @@
 package com.enigma.enigma_shop.controller;
 
 import com.enigma.enigma_shop.constant.APIUrl;
-import com.enigma.enigma_shop.dto.request.NewCustomerRequest;
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
 import com.enigma.enigma_shop.entity.Customer;
 import com.enigma.enigma_shop.service.CustomerService;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,14 +16,6 @@ import java.util.List;
 @RequestMapping(path = APIUrl.CUSTOMER_API)
 public class CustomerController {
     private final CustomerService customerService;
-
-    @PostMapping
-    public ResponseEntity<Customer> createNewCustomer(@RequestBody NewCustomerRequest request) {
-        Customer customer = customerService.create(request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(customer);
-    }
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<Customer> getCustomerById(@PathVariable String id) {
