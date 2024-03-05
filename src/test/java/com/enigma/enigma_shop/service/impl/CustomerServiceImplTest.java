@@ -135,5 +135,13 @@ class CustomerServiceImplTest {
 
     @Test
     void updateStatusById() {
+        String id = "Customer-1";
+        Optional<Customer> customer = Optional.of(Customer.builder().id(id).name("Kalil").status(true).build());
+        Mockito.when(customerRepository.findById(id)).thenReturn(customer);
+        Mockito.doNothing().when(customerRepository).updateStatus(id, false);
+
+        customerService.updateStatusById(id,false);
+
+        Mockito.verify(customerRepository,Mockito.times(1)).updateStatus(id,false);
     }
 }
