@@ -24,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
-    private final UserService userService;
+//    private final UserService userService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -55,11 +55,11 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse update(UpdateCustomerRequest request) {
         Customer currentCustomer = findByIdOrThrowNotFound(request.getId());
-        UserAccount userAccount = userService.getByContext();
-
-        if (!userAccount.getId().equals(currentCustomer.getUserAccount().getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ResponseMessage.ERROR_FORBIDDEN);
-        }
+//        UserAccount userAccount = userService.getByContext();
+//
+//        if (!userAccount.getId().equals(currentCustomer.getUserAccount().getId())) {
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ResponseMessage.ERROR_FORBIDDEN);
+//        }
 
         currentCustomer.setName(request.getName());
         currentCustomer.setMobilePhoneNo(request.getMobilePhoneNo());
