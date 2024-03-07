@@ -4,6 +4,7 @@ import com.enigma.enigma_shop.constant.APIUrl;
 import com.enigma.enigma_shop.constant.ResponseMessage;
 import com.enigma.enigma_shop.dto.request.SearchTransactionRequest;
 import com.enigma.enigma_shop.dto.request.TransactionRequest;
+import com.enigma.enigma_shop.dto.request.UpdateTransactionStatusRequest;
 import com.enigma.enigma_shop.dto.response.CommonResponse;
 import com.enigma.enigma_shop.dto.response.PagingResponse;
 import com.enigma.enigma_shop.dto.response.TransactionResponse;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -62,6 +64,21 @@ public class TransactionController {
                 .paging(paging)
                 .build();
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/status")
+    public ResponseEntity<CommonResponse<?>> updateStatus(
+            @RequestBody Map<String, Object> request) {
+        UpdateTransactionStatusRequest updateTransactionStatusRequest = UpdateTransactionStatusRequest
+                .builder()
+                .orderId(request.get("order_id").toString())
+                .transactionStatus(request.get("transaction_status").toString())
+                .build();
+        transactionService.updateStatus(updateTransactionStatusRequest);
+        return ResponseEntity.ok(CommonResponse.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message(ResponseMessage.SUCCESS_UPDATE_DATA)
+                .build());
     }
 
 }

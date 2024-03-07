@@ -15,4 +15,5 @@ public class TransactionResponse {
     private String customerId;
     private Date transDate;
     private List<TransactionDetailResponse> transactionDetails;
+    private PaymentResponse paymentResponse;
 }

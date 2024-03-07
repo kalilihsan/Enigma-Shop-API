@@ -10,12 +10,15 @@ import com.enigma.enigma_shop.dto.response.PagingResponse;
 import com.enigma.enigma_shop.dto.response.ProductResponse;
 import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.service.ProductService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,26 +27,37 @@ import java.util.List;
 @RequestMapping(path = APIUrl.PRODUCT_API)
 public class ProductController {
     private final ProductService productService;
+    private final ObjectMapper objectMapper;
 
     @PostMapping(
-            consumes = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<CommonResponse<ProductResponse>> createNewProduct(@RequestBody NewProductRequest request) {
-        ProductResponse newProduct = productService.create(request);
-        CommonResponse<ProductResponse> response = CommonResponse.<ProductResponse>builder()
-                .statusCode(HttpStatus.CREATED.value())
-                .message(ResponseMessage.SUCCESS_SAVE_DATA)
-                .data(newProduct)
-                .build();
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<CommonResponse<ProductResponse>> createNewProduct(
+            @RequestPart(name = "product") String jsonProduct,
+            @RequestPart(name = "image")MultipartFile image
+            ) {
+        CommonResponse.CommonResponseBuilder<ProductResponse> responseBuilder = CommonResponse.builder();
+        try {
+            NewProductRequest request = objectMapper.readValue(jsonProduct, new TypeReference<>() {});
+            request.setImage(image);
+            ProductResponse productResponse = productService.create(request);
+            responseBuilder.statusCode(HttpStatus.CREATED.value());
+            responseBuilder.message(ResponseMessage.SUCCESS_SAVE_DATA);
+            responseBuilder.data(productResponse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseBuilder.build());
+        } catch (Exception e) {
+            responseBuilder.message(ResponseMessage.ERROR_INTERNAL_SERVER);
+            responseBuilder.statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBuilder.build());
+        }
     }
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommonResponse<ProductResponse>> getProductById(@PathVariable String id) {
             ProductResponse product = productService.getOneById(id);
         CommonResponse<ProductResponse> response = CommonResponse.<ProductResponse>builder()
-                .statusCode(HttpStatus.CREATED.value())
+                .statusCode(HttpStatus.OK.value())
                 .message(ResponseMessage.SUCCESS_GET_DATA)
                 .data(product)
                 .build();
@@ -87,17 +101,29 @@ public class ProductController {
     }
 
     @PutMapping(
-            consumes = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<CommonResponse<ProductResponse>> updateProduct(@RequestBody UpdateProductRequest request) {
-        ProductResponse updatedProduct = productService.update(request);
-        CommonResponse<ProductResponse> response = CommonResponse.<ProductResponse>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message(ResponseMessage.SUCCESS_UPDATE_DATA)
-                .data(updatedProduct)
-                .build();
-        return ResponseEntity.ok(response);
+    public ResponseEntity<CommonResponse<ProductResponse>> updateProduct(
+            @RequestPart(name = "product") String jsonProduct,
+            @RequestPart(name = "image",required = false) MultipartFile image) {
+        CommonResponse.CommonResponseBuilder<ProductResponse> responseBuilder = CommonResponse.builder();
+        try {
+            UpdateProductRequest request = objectMapper.readValue(jsonProduct, new TypeReference<>(){});
+            if (image != null){
+                request.setImage(image);
+            }
+            ProductResponse productResponse = productService.update(request);
+            responseBuilder.statusCode(HttpStatus.OK.value());
+            responseBuilder.message(ResponseMessage.SUCCESS_UPDATE_DATA);
+            responseBuilder.data(productResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(responseBuilder.build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            responseBuilder.message(ResponseMessage.ERROR_INTERNAL_SERVER);
+            responseBuilder.statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBuilder.build());
+        }
     }
 
     @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

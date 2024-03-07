@@ -24,4 +24,7 @@ public class Product {
 
     @Column(name = "stock", nullable = false, columnDefinition = "INT CHECK (stock >= 0)")
     private Integer stock;
+    @OneToOne
+    @JoinColumn(name = "image_id",unique = true)
+    private Image image;
 }

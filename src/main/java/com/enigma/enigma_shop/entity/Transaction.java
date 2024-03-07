@@ -31,4 +31,8 @@ public class Transaction {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "trans_date", updatable = false)
     private Date transDate;
+
+    @OneToOne
+    @JoinColumn(name = "payment_id", unique = true)
+    private Payment payment;
 }

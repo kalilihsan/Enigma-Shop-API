@@ -11,4 +11,5 @@ public class ResponseMessage {
     public static final String ERROR_OUT_OF_STOCK = "the product currently out of stock";
     public static final String ERROR_CREATING_JWT = "error while creating jwt token";
     public static final String SUCCESS_LOGIN = "login successfully";
+    public static final String ERROR_INVALID_CONTENT_TYPE = "not a valid content type";
 }

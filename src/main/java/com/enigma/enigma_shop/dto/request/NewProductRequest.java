@@ -1,10 +1,12 @@
 package com.enigma.enigma_shop.dto.request;
 
+import com.enigma.enigma_shop.entity.Image;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -31,4 +33,5 @@ public class NewProductRequest {
     @NotNull(message = "stock is required")
     @Min(value = 0, message = "stock must be greater than or equal 0")
     private Integer stock;
+    private MultipartFile image;
 }

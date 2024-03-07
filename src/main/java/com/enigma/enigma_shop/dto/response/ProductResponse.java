@@ -1,5 +1,6 @@
 package com.enigma.enigma_shop.dto.response;
 
+import com.enigma.enigma_shop.entity.Image;
 import lombok.*;
 
 @Getter
@@ -12,4 +13,5 @@ public class ProductResponse {
     private String name;
     private Long price;
     private Integer stock;
+    private ImageResponse image;
 }

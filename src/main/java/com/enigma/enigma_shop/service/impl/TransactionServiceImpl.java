@@ -3,17 +3,13 @@ package com.enigma.enigma_shop.service.impl;
 import com.enigma.enigma_shop.constant.ResponseMessage;
 import com.enigma.enigma_shop.dto.request.SearchTransactionRequest;
 import com.enigma.enigma_shop.dto.request.TransactionRequest;
+import com.enigma.enigma_shop.dto.request.UpdateTransactionStatusRequest;
+import com.enigma.enigma_shop.dto.response.PaymentResponse;
 import com.enigma.enigma_shop.dto.response.TransactionDetailResponse;
 import com.enigma.enigma_shop.dto.response.TransactionResponse;
-import com.enigma.enigma_shop.entity.Customer;
-import com.enigma.enigma_shop.entity.Product;
-import com.enigma.enigma_shop.entity.Transaction;
-import com.enigma.enigma_shop.entity.TransactionDetail;
+import com.enigma.enigma_shop.entity.*;
 import com.enigma.enigma_shop.repository.TransactionRepository;
-import com.enigma.enigma_shop.service.CustomerService;
-import com.enigma.enigma_shop.service.ProductService;
-import com.enigma.enigma_shop.service.TransactionDetailService;
-import com.enigma.enigma_shop.service.TransactionService;
+import com.enigma.enigma_shop.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +29,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionDetailService transactionDetailService;
     private final CustomerService customerService;
     private final ProductService productService;
+    private final PaymentService paymentService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -64,6 +61,16 @@ public class TransactionServiceImpl implements TransactionService {
         transactionDetailService.createBulk(trxDetails);
         trx.setTransactionDetails(trxDetails);
 
+        Payment payment = paymentService.createPayment(trx);
+        trx.setPayment(payment);
+
+        PaymentResponse paymentResponse = PaymentResponse.builder()
+                .id(payment.getId())
+                .token(payment.getToken())
+                .redirectUrl(payment.getRedirectUrl())
+                .transactionStatus(payment.getTransactionStatus())
+                .build();
+
         List<TransactionDetailResponse> trxDetailResponses = trxDetails.stream().map(detail ->
                 TransactionDetailResponse.builder()
                 .id(detail.getId())
@@ -77,6 +84,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .customerId(trx.getCustomer().getId())
                 .transDate(trx.getTransDate())
                 .transactionDetails(trxDetailResponses)
+                .paymentResponse(paymentResponse)
                 .build();
     }
 
@@ -101,5 +109,16 @@ public class TransactionServiceImpl implements TransactionService {
                     .transactionDetails(trxDetailResponses)
                     .build();
         });
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void updateStatus(UpdateTransactionStatusRequest request) {
+        Transaction transaction = transactionRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, ResponseMessage.ERROR_NOT_FOUND
+                ));
+        Payment payment = transaction.getPayment();
+        payment.setTransactionStatus(request.getTransactionStatus());
     }
 }
